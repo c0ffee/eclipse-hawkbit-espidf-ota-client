@@ -143,76 +143,81 @@ UpdateResult HawkbitClient::updateRegistration(const Registration& registration,
 
     _doc["status"]["execution"] = "closed";
     _doc["status"]["result"]["finished"] = "success";
+    esp_http_client_handle_t _http = initHttpHandle(HTTP_METHOD_PUT, registration.url());
 
-    _http.begin(this->_wifi, registration.url());
-
-    _http.addHeader("Accept", "application/hal+json");
-    _http.addHeader("Content-Type", "application/json");
-    _http.addHeader("Authorization", this->_authToken);
-
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
-    serializeJsonPretty(_doc, Serial);
-#endif
-
-    String buffer;
+    std::string buffer;
     size_t len = serializeJson(_doc, buffer);
     (void)len; // ignore unused
 
-    log_d("JSON - len: %d", len);
+    ESP_LOGI(TAG,"JSON - len: %d", len);
+    esp_http_client_set_post_field(_http, buffer.data(), len);
+    esp_err_t err = esp_http_client_perform(_http);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "updateRegistration HTTP Status = %d, content_length = %d",
+                esp_http_client_get_status_code(_http),
+                esp_http_client_get_content_length(_http));
 
-    int code = _http.PUT(buffer);
-    log_d("Result - code: %d", code);
+        ESP_LOGI(TAG,"Result - payload: %s", this->resultPayload);
+    } else {
+        ESP_LOGE(TAG, "updateRegistration HTTP request failed: %s", esp_err_to_name(err));
+    }
+    int code = esp_http_client_get_status_code(_http);
+    ESP_LOGD(TAG,"Result - code: %d", code);
 
-    String resultPayload = _http.getString();
-    log_d("Result - payload: %s", resultPayload.c_str());
-
-    _http.end();
+    esp_http_client_cleanup(_http);
 
     return UpdateResult(code);
 }
 
 State HawkbitClient::readState()
 {
-    _http.begin(this->_wifi, this->_baseUrl + "/" + this->_tenantName + "/controller/v1/" + this->_controllerId);
-
-    _http.addHeader("Authorization", this->_authToken);
-    _http.addHeader("Accept", "application/hal+json");
+    esp_http_client_handle_t _http = initHttpHandle(HTTP_METHOD_GET, (this->_baseUrl + "/" + this->_tenantName + "/controller/v1/" + this->_controllerId));
 
     _doc.clear();
 
-    int code = _http.GET();
-    log_d("Result - code: %d", code);
-    String resultPayload = _http.getString();
-    log_d("Result - payload: %s", resultPayload.c_str());
-    if ( code == HTTP_CODE_OK ) {
-        DeserializationError error = deserializeJson(_doc, resultPayload);
-        if (error) {
-            _http.end();
-            // FIXME: need a way to handle errors
-            throw 1;
-        }
-    }
-    _http.end();
+    esp_err_t err = esp_http_client_perform(_http);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "readState HTTP Status = %d, content_length = %d",
+                esp_http_client_get_status_code(_http),
+                esp_http_client_get_content_length(_http));
 
-    String href = _doc["_links"]["deploymentBase"]["href"] | "";
-    if (!href.isEmpty()) {
-        log_d("Fetching deployment: %s", href.c_str());
-        return State(this->readDeployment(href));
+            int code = esp_http_client_get_status_code(_http);
+            ESP_LOGD(TAG,"Result - code: %d", code);
+
+            ESP_LOGD(TAG,"Result - payload: %s", this->resultPayload);
+            if ( code == HttpStatus_Ok ) {
+                DeserializationError error = deserializeJson(_doc, resultPayload);
+                if (error) {
+                    //esp_http_client_cleanup(_http);
+                    // FIXME: need a way to handle errors
+                    //throw 1;
+                }
+            }
+            esp_http_client_cleanup(_http);
+
+            std::string href = _doc["_links"]["deploymentBase"]["href"] | "";
+            if (!href.empty()) {
+                ESP_LOGI(TAG,"Fetching deployment: %s", href.c_str());
+                return State(this->readDeployment(href));
+            }
+
+            href = _doc["_links"]["configData"]["href"] | "";
+            if (!href.empty()) {
+                ESP_LOGI(TAG,"Need to register %s", href.c_str());
+                return State(Registration(href));
+            }
+
+            href = _doc["_links"]["cancelAction"]["href"] | "";
+            if (!href.empty()) {
+                ESP_LOGI(TAG,"Fetching cancel action: %s", href.c_str());
+                return State(this->readCancel(href));
+            }
+    } else {
+        esp_http_client_cleanup(_http);
+        ESP_LOGE(TAG, "readState HTTP request failed: %s", esp_err_to_name(err));
     }
 
-    href = _doc["_links"]["configData"]["href"] | "";
-    if (!href.isEmpty()) {
-        log_d("Need to register", href.c_str());
-        return State(Registration(href));
-    }
-
-    href = _doc["_links"]["cancelAction"]["href"] | "";
-    if (!href.isEmpty()) {
-        log_d("Fetching cancel action: %s", href.c_str());
-        return State(this->readCancel(href));
-    }
-
-    log_d("No update");
+    ESP_LOGD(TAG,"No update");
     return State();
 }
 
@@ -273,58 +278,69 @@ std::list<Chunk> chunks(const JsonArray& chunks)
 
 Deployment HawkbitClient::readDeployment(const std::string& href)
 {
-    _http.begin(this->_wifi, href);
-
-    _http.addHeader("Authorization", this->_authToken);
-    _http.addHeader("Accept", "application/hal+json");
-
+    esp_http_client_handle_t _http = initHttpHandle(HTTP_METHOD_GET, href);
+    
     _doc.clear();
-
-    int code = _http.GET();
-    log_d("Result - code: %d", code);
-    String resultPayload = _http.getString();
-    log_d("Result - payload: %s", resultPayload.c_str());
-    if ( code == HTTP_CODE_OK ) {
-        DeserializationError error = deserializeJson(_doc, resultPayload);
-        if (error) {
-            _http.end();
-            // FIXME: need a way to handle errors
-            throw 1;
-        }
+    esp_err_t err = esp_http_client_perform(_http);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "readDeployment HTTP Status = %d, content_length = %d",
+            esp_http_client_get_status_code(_http),
+            esp_http_client_get_content_length(_http));
+            int code = esp_http_client_get_status_code(_http);
+            ESP_LOGD(TAG,"Result - code: %d", code);
+            ESP_LOGD(TAG,"Result - payload: %s", this->resultPayload);
+            if ( code == HttpStatus_Ok ) {
+                DeserializationError error = deserializeJson(_doc, resultPayload);
+                if (error) {
+                    //esp_http_client_cleanup(_http);
+                    // FIXME: need a way to handle errors
+                    //throw 1;
+                }
+            }
+    } else {
+        ESP_LOGE(TAG, "readDeployment HTTP request failed: %s", esp_err_to_name(err));
     }
-    _http.end();
 
-    String id = _doc["id"];
-    String download = _doc["deployment"]["download"];
-    String update = _doc["deployment"]["update"];
+    esp_http_client_cleanup(_http);
+
+    std::string id = _doc["id"];
+    std::string download = _doc["deployment"]["download"];
+    std::string update = _doc["deployment"]["update"];
 
     return Deployment(id, download, update, chunks(_doc["deployment"]["chunks"]));
 }
 
 Stop HawkbitClient::readCancel(const std::string& href)
 {
-    _http.begin(this->_wifi, href);
-
-    _http.addHeader("Authorization", this->_authToken);
-    _http.addHeader("Accept", "application/hal+json");
+    esp_http_client_handle_t _http = initHttpHandle(HTTP_METHOD_GET, href);
 
     _doc.clear();
 
-    int code = _http.GET();
-    log_d("Result - code: %d", code);
-    String resultPayload = _http.getString();
-    log_d("Result - payload: %s", resultPayload.c_str());
-    if ( code == HTTP_CODE_OK ) {
-        DeserializationError error = deserializeJson(_doc, resultPayload);
-        if (error) {
-            _http.end();
-            // FIXME: need a way to handle errors
-            throw 1;
-        }
-    }
-    _http.end();
+    esp_err_t err = esp_http_client_perform(_http);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "readCancel HTTP Status = %d, content_length = %d",
+                esp_http_client_get_status_code(_http),
+                esp_http_client_get_content_length(_http));
+        int code = esp_http_client_get_status_code(_http);
+        ESP_LOGD(TAG,"Result - code: %d", code);
 
-    String stopId = _doc["cancelAction"]["stopId"] | "";
+        ESP_LOGD(TAG,"Result - payload: %s", this->resultPayload);
+
+        if ( code == HttpStatus_Ok ) {
+            DeserializationError error = deserializeJson(_doc, resultPayload);
+            if (error) {
+                //esp_http_client_cleanup(_http);
+                // FIXME: need a way to handle errors
+                //throw 1;
+            }
+        }
+    } else {
+        ESP_LOGE(TAG, "readCancel HTTP request failed: %s", esp_err_to_name(err));
+    }
+
+    esp_http_client_cleanup(_http);
+
+    std::string stopId = _doc["cancelAction"]["stopId"] | "";
     
     return Stop(stopId);
 }
@@ -353,30 +369,29 @@ UpdateResult HawkbitClient::sendFeedback(IdProvider id, const std::string& execu
 
     _doc["status"]["execution"] = execution;
     _doc["status"]["result"]["finished"] = finished;
+    esp_http_client_handle_t _http = initHttpHandle(HTTP_METHOD_POST, this->feedbackUrl(id));
 
-    _http.begin(this->_wifi, this->feedbackUrl(id));
-
-    _http.addHeader("Accept", "application/hal+json");
-    _http.addHeader("Content-Type", "application/json");
-    _http.addHeader("Authorization", this->_authToken);
-
-    String buffer;
+    std::string buffer;
     size_t len = serializeJson(_doc, buffer);
     (void)len; // ignore unused
 
-    log_d("JSON - len: %d", len);
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
-    serializeJsonPretty(_doc, Serial);
-#endif
+    ESP_LOGD(TAG,"JSON - len: %d", len);
+    esp_http_client_set_post_field(_http, buffer.data(), len);
 
     // FIXME: handle result
-    int code = _http.POST(buffer);
-    log_d("Result - code: %d", code);
+    esp_err_t err = esp_http_client_perform(_http);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "sendFeedback HTTP Status = %d, content_length = %d",
+                esp_http_client_get_status_code(_http),
+                esp_http_client_get_content_length(_http));
+        ESP_LOGD(TAG,"Result - payload: %s", resultPayload);
+    } else {
+        ESP_LOGE(TAG, "sendFeedback HTTP request failed: %s", esp_err_to_name(err));
+    }
+    int code = esp_http_client_get_status_code(_http);
+    ESP_LOGD(TAG,"Result - code: %d", code);
 
-    String resultPayload = _http.getString();
-    log_d("Result - payload: %s", resultPayload.c_str());
-
-    _http.end();
+    esp_http_client_cleanup(_http);
 
     return UpdateResult(code);
 }
