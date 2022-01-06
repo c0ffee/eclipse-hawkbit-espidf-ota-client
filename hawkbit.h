@@ -232,7 +232,7 @@ class State {
         {
         }
 
-        boolean is(Type type) const
+        bool is(Type type) const
         {
             return this->_type == type;
         }
