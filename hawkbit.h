@@ -74,17 +74,17 @@ class Artifact {
         const std::map<std::string,std::string>& hashes() const { return _hashes; }
         const std::map<std::string,std::string>& links() const { return _links; }
 
-        void dump(Print& out, const String& prefix = "") const {
-            out.printf("%s%s %u\n", prefix.c_str(), this->_filename.c_str(), this->_size);
-            out.printf("%sHashes\n", prefix.c_str());
-            for (std::pair<String,String> element : this->_hashes) {
-                out.printf("%s    %s = %s\n", prefix.c_str(), element.first.c_str(), element.second.c_str());
-            }
-            out.printf("%sLinks\n", prefix.c_str());
-            for (std::pair<String,String> element : this->_links) {
-                out.printf("%s    %s = %s\n", prefix.c_str(), element.first.c_str(), element.second.c_str());
-            }
-        }
+        void dump(const std::string& prefix = "") const {
+             ESP_LOGI(prefix.c_str(),"%s %u\n", this->_filename.c_str(), this->_size);
+             ESP_LOGI(prefix.c_str(),"Hashes");
+             for (std::pair<std::string,std::string> element : this->_hashes) {
+                 ESP_LOGI(prefix.c_str(), "    %s = %s\n", element.first.c_str(), element.second.c_str());
+             }
+            ESP_LOGI(prefix.c_str(),"Links");
+             for (std::pair<std::string,std::string> element : this->_links) {
+                 ESP_LOGI(prefix.c_str(), "    %s = %s\n", element.first.c_str(), element.second.c_str());
+             }
+         }
 
     private:
         std::string _filename;
@@ -166,9 +166,9 @@ class Stop {
 
         const std::string& id() const { return this->_id; }
 
-        void dump(Print& out, const String& prefix = "") const
+        void dump(const std::string& prefix = "") const
         {
-            out.printf("%sStop: %s\n", prefix.c_str(), this->_id.c_str());
+            ESP_LOGI(prefix.c_str(),"Stop: %s\n", this->_id.c_str());
         }
     private:
         std::string _id;
@@ -187,10 +187,10 @@ class Registration {
 
         const std::string& url() const { return this->_url; }
 
-        // void dump(Print& out, const std::string& prefix = "") const
-        // {
-        //     out.printf("%sRegistration: %s\n", prefix.c_str(), this->_url.c_str());
-        // }
+        void dump(const std::string& prefix = "") const
+        {
+            ESP_LOGI(prefix.c_str(),"Registration: %s\n", this->_url.c_str());
+        }
 
     private:
         std::string _url;
@@ -235,26 +235,26 @@ class State {
         const Stop& stop() const { return this->_stop; }
         const Registration& registration() const { return this->_registration; }
 
-        void dump(Print& out, const String& prefix = "") const
+        void dump(const std::string& prefix = "") const
         {
             switch (this->_type) {
                 case State::NONE:
-                    out.printf("%sState <NONE>\n", prefix.c_str());
+                    ESP_LOGI(prefix.c_str(),"State <NONE>");
                     break;
                 case State::UPDATE:
-                    out.printf("%sState <UPDATE>\n", prefix.c_str());
-                    this->_deployment.dump(out, "    ");
+                    ESP_LOGI(prefix.c_str(),"State <UPDATE>");
+                    this->_deployment.dump("    ");
                     break;
                 case State::CANCEL:
-                    out.printf("%sState <CANCEL>\n", prefix.c_str());
-                    this->_stop.dump(out, "    ");
+                    ESP_LOGI(prefix.c_str(),"State <CANCEL>");
+                    this->_stop.dump("    ");
                     break;
                 case State::REGISTER:
-                    out.printf("%sState <REGISTER>\n", prefix.c_str());
-                    this->_registration.dump(out, "    ");
+                    ESP_LOGI(prefix.c_str(),"State <REGISTER>");
+                    this->_registration.dump("    ");
                     break;
                 default:
-                    out.printf("%sState <UNKNOWN>\n", prefix.c_str());
+                    ESP_LOGI(prefix.c_str(),"State <UNKNOWN>");
                     break;
             }
         }
