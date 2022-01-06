@@ -20,13 +20,18 @@ HawkbitClient::HawkbitClient(
     const std::string& baseUrl,
     const std::string& tenantName,
     const std::string& controllerId,
-    const std::string &securityToken) :
+    const std::string &securityToken,
+    char *server_cert_pem_start) :
     _doc(doc),
     _baseUrl(baseUrl),
     _tenantName(tenantName),
     _controllerId(controllerId),
     _authToken("TargetToken " + securityToken)
 {
+    _http_config.event_handler = _http_event_handler;
+    _http_config.user_data = resultPayload;        // Pass address of local buffer to get response
+    _http_config.disable_auto_redirect = false;
+    _http_config.cert_pem = server_cert_pem_start;
 }
 
 UpdateResult HawkbitClient::updateRegistration(const Registration& registration, const std::map<std::string,std::string>& data, MergeMode mergeMode, std::initializer_list<std::string> details)

@@ -312,6 +312,7 @@ class HawkbitClient {
             const std::string& tenantName,
             const std::string& controllerId,
             const std::string& securityToken,
+            char *server_cert_pem_start = NULL
             );
 
         State readState();
