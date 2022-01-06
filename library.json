@@ -1,21 +1,21 @@
 {
-  "name": "Eclipse-Hawkbit-OTA-Client",
+  "name": "Eclipse-Hawkbit-espidf-OTA-Client",
   "keywords": "eclipse, hawkbit, firmware, update, ota",
   "description": "An OTA update client for Eclipse Hawkbit",
   "license": "EPL-2.0",
   "authors": [
     {
-      "name": "Jens Reimann",
-      "url": "https://dentrassi.de/"
+      "name": "Martin Schuessler",
+      "url": ""
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ctron/eclipse-hawkbit-arduino-ota-client"
+    "url": "https://github.com/c0ffee/eclipse-hawkbit-espidf-ota-client"
   },
   "dependencies": {
     "ArduinoJson": "^6.0.0"
   },
-  "version": "0.5.1",
-  "frameworks": "arduino"
+  "version": "0.1.0",
+  "frameworks": "espidf"
 }
