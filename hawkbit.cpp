@@ -98,9 +98,21 @@ HawkbitClient::HawkbitClient(
     _authToken("TargetToken " + securityToken)
 {
     _http_config.event_handler = _http_event_handler;
+    _http_config.url = "http://localhost";
     _http_config.user_data = resultPayload;        // Pass address of local buffer to get response
     _http_config.disable_auto_redirect = false;
     _http_config.cert_pem = server_cert_pem_start;
+}
+
+esp_http_client_handle_t HawkbitClient::initHttpHandle(esp_http_client_method_t method, const std::string &url) {
+    esp_http_client_handle_t _http = esp_http_client_init(&_http_config);
+    esp_http_client_set_url(_http, url.c_str());
+    esp_http_client_set_method(_http, method);
+    esp_http_client_set_header(_http, "Accept", "application/hal+json");
+    esp_http_client_set_header(_http, "Content-Type", "application/json");
+    esp_http_client_set_header(_http, "Authorization", this->_authToken.c_str());
+
+    return _http;
 }
 
 UpdateResult HawkbitClient::updateRegistration(const Registration& registration, const std::map<std::string,std::string>& data, MergeMode mergeMode, std::initializer_list<std::string> details)

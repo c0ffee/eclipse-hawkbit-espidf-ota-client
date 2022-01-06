@@ -376,6 +376,8 @@ class HawkbitClient {
             this->_http_config.timeout_ms = connectTimeout;
         }
 
+        esp_http_client_handle_t initHttpHandle(esp_http_client_method_t method, const std::string& url);
+
     private:
         JsonDocument& _doc;
     
