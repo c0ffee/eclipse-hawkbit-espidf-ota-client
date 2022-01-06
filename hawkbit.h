@@ -369,20 +369,11 @@ class HawkbitClient {
 
         /**
          * Set the timeout (in milliseconds) for establishing a connection to the server.
-         * @param connectTimeout int32_t
+         * @param connectTimeout int
          */
-        void connectTimeout(int32_t connectTimeout)
+        void connectTimeout(int connectTimeout)
         {
-            this->_http.setConnectTimeout(connectTimeout);
-        }
-
-        /**
-         * Set the timeout (in seconds) for the TCP connection.
-         * @param connectTimeout int32_t
-         */
-        void timeout(uint16_t timeout)
-        {
-            this->_http.setTimeout(timeout);
+            this->_http_config.timeout_ms(connectTimeout);
         }
 
     private:
