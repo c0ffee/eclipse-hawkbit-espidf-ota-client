@@ -17,13 +17,11 @@
 
 HawkbitClient::HawkbitClient(
     JsonDocument& doc,
-    WiFiClient& wifi,
     const std::string& baseUrl,
     const std::string& tenantName,
     const std::string& controllerId,
     const std::string &securityToken) :
     _doc(doc),
-    _wifi(wifi),
     _baseUrl(baseUrl),
     _tenantName(tenantName),
     _controllerId(controllerId),

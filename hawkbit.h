@@ -16,8 +16,6 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include <WiFi.h>
-#include <HTTPClient.h>
 #include <map>
 #include <list>
 #include <ArduinoJson.h>
@@ -303,7 +301,6 @@ class HawkbitClient {
 
         HawkbitClient(
             JsonDocument& json,
-            WiFiClient& wifi,
             const std::string& baseUrl,
             const std::string& tenantName,
             const std::string& controllerId,
@@ -382,9 +379,7 @@ class HawkbitClient {
 
     private:
         JsonDocument& _doc;
-        WiFiClient& _wifi;
     
-        HTTPClient _http;
 
         std::string _baseUrl;
         std::string _tenantName;
