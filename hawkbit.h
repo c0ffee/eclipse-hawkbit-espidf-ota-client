@@ -19,6 +19,13 @@
 #include <map>
 #include <list>
 #include <ArduinoJson.h>
+#include "esp_log.h"
+#include "esp_tls.h"
+
+#include "esp_http_client.h"
+
+#define MAX_HTTP_RECV_BUFFER 512
+#define MAX_HTTP_OUTPUT_BUFFER 2048
 
 class Artifact;
 class Chunk;
@@ -380,6 +387,8 @@ class HawkbitClient {
     private:
         JsonDocument& _doc;
     
+        char resultPayload[MAX_HTTP_OUTPUT_BUFFER] = {0};
+        esp_http_client_config_t _http_config;
 
         std::string _baseUrl;
         std::string _tenantName;
