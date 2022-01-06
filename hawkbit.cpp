@@ -18,10 +18,10 @@
 HawkbitClient::HawkbitClient(
     JsonDocument& doc,
     WiFiClient& wifi,
-    const String& baseUrl,
-    const String& tenantName,
-    const String& controllerId,
-    const String &securityToken) :
+    const std::string& baseUrl,
+    const std::string& tenantName,
+    const std::string& controllerId,
+    const std::string &securityToken) :
     _doc(doc),
     _wifi(wifi),
     _baseUrl(baseUrl),
@@ -31,7 +31,7 @@ HawkbitClient::HawkbitClient(
 {
 }
 
-UpdateResult HawkbitClient::updateRegistration(const Registration& registration, const std::map<String,String>& data, MergeMode mergeMode, std::initializer_list<String> details)
+UpdateResult HawkbitClient::updateRegistration(const Registration& registration, const std::map<std::string,std::string>& data, MergeMode mergeMode, std::initializer_list<std::string> details)
 {
     _doc.clear();
 
@@ -48,8 +48,8 @@ UpdateResult HawkbitClient::updateRegistration(const Registration& registration,
     }
 
     _doc.createNestedObject("data");
-    for (const std::pair<String,String>& entry : data) {
-        _doc["data"][String(entry.first)] = entry.second;
+    for (const std::pair<std::string,std::string>& entry : data) {
+        _doc["data"][std::string(entry.first)] = entry.second;
     }
 
     JsonArray d = _doc["status"].createNestedArray("details");
@@ -132,22 +132,22 @@ State HawkbitClient::readState()
     return State();
 }
 
-std::map<String,String> toMap(const JsonObject& obj) {
-    std::map<String,String> result;
+std::map<std::string,std::string> toMap(const JsonObject& obj) {
+    std::map<std::string,std::string> result;
     for (const JsonPair& p: obj) {
         if (p.value().is<char*>()) {
-            result[String(p.key().c_str())] = String(p.value().as<char*>());
+            result[std::string(p.key().c_str())] = std::string(p.value().as<char*>());
         }
     }
     return result;
 }
 
-std::map<String,String> toLinks(const JsonObject& obj) {
-    std::map<String,String> result;
+std::map<std::string,std::string> toLinks(const JsonObject& obj) {
+    std::map<std::string,std::string> result;
     for (const JsonPair& p: obj) {
         const char* key = p.key().c_str();
         const char* value = p.value()["href"];
-        result[String(key)] = String(value);
+        result[std::string(key)] = std::string(value);
     }
     return result;
 }
@@ -187,7 +187,7 @@ std::list<Chunk> chunks(const JsonArray& chunks)
     return result;
 }
 
-Deployment HawkbitClient::readDeployment(const String& href)
+Deployment HawkbitClient::readDeployment(const std::string& href)
 {
     _http.begin(this->_wifi, href);
 
@@ -217,7 +217,7 @@ Deployment HawkbitClient::readDeployment(const String& href)
     return Deployment(id, download, update, chunks(_doc["deployment"]["chunks"]));
 }
 
-Stop HawkbitClient::readCancel(const String& href)
+Stop HawkbitClient::readCancel(const std::string& href)
 {
     _http.begin(this->_wifi, href);
 
@@ -245,18 +245,18 @@ Stop HawkbitClient::readCancel(const String& href)
     return Stop(stopId);
 }
 
-String HawkbitClient::feedbackUrl(const Deployment& deployment) const
+std::string HawkbitClient::feedbackUrl(const Deployment& deployment) const
 {
     return this->_baseUrl + "/" + this->_tenantName + "/controller/v1/" + this->_controllerId + "/deploymentBase/" + deployment.id() + "/feedback";
 }
 
-String HawkbitClient::feedbackUrl(const Stop& stop) const
+std::string HawkbitClient::feedbackUrl(const Stop& stop) const
 {
     return this->_baseUrl + "/" + this->_tenantName + "/controller/v1/" + this->_controllerId + "/cancelAction/" + stop.id() + "/feedback";
 }
 
 template<typename IdProvider>
-UpdateResult HawkbitClient::sendFeedback(IdProvider id, const String& execution, const String& finished, std::vector<String> details)
+UpdateResult HawkbitClient::sendFeedback(IdProvider id, const std::string& execution, const std::string& finished, std::vector<std::string> details)
 {
     _doc.clear();
 
@@ -297,7 +297,7 @@ UpdateResult HawkbitClient::sendFeedback(IdProvider id, const String& execution,
     return UpdateResult(code);
 }
 
-UpdateResult HawkbitClient::reportProgress(const Deployment& deployment, uint32_t done, uint32_t total, std::vector<String> details)
+UpdateResult HawkbitClient::reportProgress(const Deployment& deployment, uint32_t done, uint32_t total, std::vector<std::string> details)
 {
     return sendFeedback(
         deployment,
@@ -307,7 +307,7 @@ UpdateResult HawkbitClient::reportProgress(const Deployment& deployment, uint32_
     );
 }
 
-UpdateResult HawkbitClient::reportScheduled(const Deployment& deployment, std::vector<String> details)
+UpdateResult HawkbitClient::reportScheduled(const Deployment& deployment, std::vector<std::string> details)
 {
     return sendFeedback(
         deployment,
@@ -317,7 +317,7 @@ UpdateResult HawkbitClient::reportScheduled(const Deployment& deployment, std::v
     );
 }
 
-UpdateResult HawkbitClient::reportResumed(const Deployment& deployment, std::vector<String> details)
+UpdateResult HawkbitClient::reportResumed(const Deployment& deployment, std::vector<std::string> details)
 {
     return sendFeedback(
         deployment,
@@ -327,7 +327,7 @@ UpdateResult HawkbitClient::reportResumed(const Deployment& deployment, std::vec
     );
 }
 
-UpdateResult HawkbitClient::reportComplete(const Deployment& deployment, bool success, std::vector<String> details)
+UpdateResult HawkbitClient::reportComplete(const Deployment& deployment, bool success, std::vector<std::string> details)
 {
     return sendFeedback(
         deployment,
@@ -337,7 +337,7 @@ UpdateResult HawkbitClient::reportComplete(const Deployment& deployment, bool su
     );
 }
 
-UpdateResult HawkbitClient::reportCanceled(const Deployment& deployment, std::vector<String> details)
+UpdateResult HawkbitClient::reportCanceled(const Deployment& deployment, std::vector<std::string> details)
 {
     return sendFeedback(
         deployment,
@@ -347,7 +347,7 @@ UpdateResult HawkbitClient::reportCanceled(const Deployment& deployment, std::ve
     );
 }
 
-UpdateResult HawkbitClient::reportCancelAccepted(const Stop& stop, std::vector<String> details)
+UpdateResult HawkbitClient::reportCancelAccepted(const Stop& stop, std::vector<std::string> details)
 {
     return sendFeedback(
         stop,
@@ -357,7 +357,7 @@ UpdateResult HawkbitClient::reportCancelAccepted(const Stop& stop, std::vector<S
     );
 }
 
-UpdateResult HawkbitClient::reportCancelRejected(const Stop& stop, std::vector<String> details)
+UpdateResult HawkbitClient::reportCancelRejected(const Stop& stop, std::vector<std::string> details)
 {
     return sendFeedback(
         stop,
