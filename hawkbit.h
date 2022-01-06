@@ -380,7 +380,7 @@ class HawkbitClient {
         JsonDocument& _doc;
     
         char resultPayload[MAX_HTTP_OUTPUT_BUFFER] = {0};
-        esp_http_client_config_t _http_config;
+        esp_http_client_config_t _http_config = {0};
 
         std::string _baseUrl;
         std::string _tenantName;
