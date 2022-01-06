@@ -286,20 +286,20 @@ class DownloadError {
         uint32_t _code;
 };
 
-class Download {
-    public:
-        Stream& stream() { return this->_stream; }
+// class Download {
+//     public:
+//         Stream& stream() { return this->_stream; }
 
-    private:
-        Stream& _stream;
+//     private:
+//         Stream& _stream;
 
-        Download(Stream& stream) :
-            _stream(stream)
-         {
-         }
+//         Download(Stream& stream) :
+//             _stream(stream)
+//          {
+//          }
 
-    friend HawkbitClient;
-};
+//     friend HawkbitClient;
+// };
 
 class HawkbitClient {
     public:
@@ -317,39 +317,39 @@ class HawkbitClient {
 
         State readState();
 
-        template<typename DownloadHandler>
-        void download(const Artifact& artifact, DownloadHandler function)
-        {
-            download(artifact, "download", function);
-        }
+        // template<typename DownloadHandler>
+        // void download(const Artifact& artifact, DownloadHandler function)
+        // {
+        //     download(artifact, "download", function);
+        // }
 
-        template<typename DownloadHandler>
-        void download(const Artifact& artifact, const std::string& linkType, DownloadHandler function)
-        {
-            auto href = artifact.links().find(linkType);
+        // template<typename DownloadHandler>
+        // void download(const Artifact& artifact, const std::string& linkType, DownloadHandler function)
+        // {
+        //     auto href = artifact.links().find(linkType);
 
-            if ( href == artifact.links().end()) {
-                throw std::string("Missing link for download");
-            }
+        //     if ( href == artifact.links().end()) {
+        //         throw std::string("Missing link for download");
+        //     }
 
-            _http.begin(this->_wifi, href->second);
+        //     _http.begin(this->_wifi, href->second);
 
-            _http.addHeader("Authorization", this->_authToken);
+        //     _http.addHeader("Authorization", this->_authToken);
 
-            int code = _http.GET();
-            log_i("Result - code: %d", code);
+        //     int code = _http.GET();
+        //     log_i("Result - code: %d", code);
 
-            if (code == HTTP_CODE_OK ) {
-                Download d(_http.getStream());
-                function(d);
-            }
+        //     if (code == HTTP_CODE_OK ) {
+        //         Download d(_http.getStream());
+        //         function(d);
+        //     }
 
-            _http.end();
+        //     _http.end();
 
-            if (code != HTTP_CODE_OK ) {
-                throw DownloadError(code);
-            }
-        };
+        //     if (code != HTTP_CODE_OK ) {
+        //         throw DownloadError(code);
+        //     }
+        // };
 
         UpdateResult reportProgress(const Deployment& deployment, uint32_t done, uint32_t total, std::vector<std::string> details = {});
 
