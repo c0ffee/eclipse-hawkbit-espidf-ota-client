@@ -10,10 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
-
 #include "hawkbit.h"
 
-#include <Arduino.h>
 
 HawkbitClient::HawkbitClient(
     JsonDocument& doc,
