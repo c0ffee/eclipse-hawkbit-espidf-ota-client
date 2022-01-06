@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <utility>
-#include <WString.h>
+#include <string>
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <map>
@@ -59,10 +59,10 @@ class DownloadResult {
 class Artifact {
     public:
         Artifact(
-            const String& filename,
+            const std::string& filename,
             uint32_t size,
-            const std::map<String,String>& hashes,
-            const std::map<String,String>& links
+            const std::map<std::string,std::string>& hashes,
+            const std::map<std::string,std::string>& links
             ) :
             _filename(filename),
             _size(size),
@@ -71,10 +71,10 @@ class Artifact {
         {
         }
 
-        const String& filename() const { return _filename; }
+        const std::string& filename() const { return _filename; }
         const uint32_t size() const { return _size; }
-        const std::map<String,String>& hashes() const { return _hashes; }
-        const std::map<String,String>& links() const { return _links; }
+        const std::map<std::string,std::string>& hashes() const { return _hashes; }
+        const std::map<std::string,std::string>& links() const { return _links; }
 
         void dump(Print& out, const String& prefix = "") const {
             out.printf("%s%s %u\n", prefix.c_str(), this->_filename.c_str(), this->_size);
@@ -89,15 +89,15 @@ class Artifact {
         }
 
     private:
-        String _filename;
+        std::string _filename;
         uint32_t _size;
-        std::map<String,String> _hashes;
-        std::map<String,String> _links;
+        std::map<std::string,std::string> _hashes;
+        std::map<std::string,std::string> _links;
 };
 
 class Chunk {
     public:
-        Chunk(const String& part, const String& version, const String& name, const std::list<Artifact>& artifacts) :
+        Chunk(const std::string& part, const std::string& version, const std::string& name, const std::list<Artifact>& artifacts) :
             _part(part),
             _version(version),
             _name(name),
@@ -105,22 +105,22 @@ class Chunk {
         {
         }
 
-        const String& part() const { return _part; }
-        const String& version() const { return _version; }
-        const String& name() const { return _name; }
+        const std::string& part() const { return _part; }
+        const std::string& version() const { return _version; }
+        const std::string& name() const { return _name; }
         const std::list<Artifact>& artifacts() const { return _artifacts; }
 
-        void dump(Print& out, const String& prefix = "") const {
-            out.printf("%s%s - %s (%s)\n", prefix.c_str(), this->_name.c_str(), this->_version.c_str(), this->_part.c_str());
-            for (Artifact a: this->_artifacts) {
-                a.dump(out, prefix + "    ");
-            }
-        }
+        void dump(const std::string& prefix = "") const {
+             ESP_LOGI(prefix.c_str(),"%s - %s (%s)\n", this->_name.c_str(), this->_version.c_str(), this->_part.c_str());
+             for (Artifact a: this->_artifacts) {
+                 a.dump(prefix + "    ");
+             }
+         }
 
     private:
-        String _part;
-        String _version;
-        String _name;
+        std::string _part;
+        std::string _version;
+        std::string _name;
         std::list<Artifact> _artifacts;
 };
 
@@ -129,7 +129,7 @@ class Deployment {
         Deployment() {
         }
 
-        Deployment(const String& id, const String& download, const String& update, const std::list<Chunk>& chunks) :
+        Deployment(const std::string& id, const std::string& download, const std::string& update, const std::list<Chunk>& chunks) :
             _id(id),
             _download(download),
             _update(update),
@@ -137,23 +137,23 @@ class Deployment {
         {
         }
 
-        const String& id() const { return _id; }
+        const std::string& id() const { return _id; }
         const std::list<Chunk>& chunks() const { return _chunks; }
 
-        void dump(Print& out, const String& prefix = "") const {
-            out.printf("%sDeployment: %s\n", prefix.c_str(), this->_id.c_str());
-            out.printf("%s    Download: %s, Update: %s\n", prefix.c_str(), this->_download.c_str(), this->_update.c_str());
-            out.printf("%s    Chunks:\n", prefix.c_str());
-            String chunkPrefix = prefix + "        ";
-            for (Chunk c : this->_chunks) {
-                c.dump(out, chunkPrefix);
-            }
-            out.println();
-        };
+        void dump(const std::string& prefix = "") const {
+             ESP_LOGI(prefix.c_str(),"Deployment: %s\n", this->_id.c_str());
+             ESP_LOGI(prefix.c_str(),"    Download: %s, Update: %s\n", this->_download.c_str(), this->_update.c_str());
+             ESP_LOGI(prefix.c_str(),"    Chunks:");
+             std::string chunkPrefix = prefix + "        ";
+             for (Chunk c : this->_chunks) {
+                 c.dump(chunkPrefix);
+             }
+             ESP_LOGI(prefix.c_str(), "");
+         };
     private:
-        String _id;
-        String _download;
-        String _update;
+        std::string _id;
+        std::string _download;
+        std::string _update;
         std::list<Chunk> _chunks;
 };
 
@@ -162,18 +162,18 @@ class Stop {
         Stop() {
         }
 
-        Stop(const String&id) :
+        Stop(const std::string&id) :
             _id(id)
         {}
 
-        const String& id() const { return this->_id; }
+        const std::string& id() const { return this->_id; }
 
         void dump(Print& out, const String& prefix = "") const
         {
             out.printf("%sStop: %s\n", prefix.c_str(), this->_id.c_str());
         }
     private:
-        String _id;
+        std::string _id;
 };
 
 class Registration {
@@ -182,20 +182,20 @@ class Registration {
         {
         }
 
-        Registration(const String& url):
+        Registration(const std::string& url):
             _url(url)
         {
         }
 
-        const String& url() const { return this->_url; }
+        const std::string& url() const { return this->_url; }
 
-        void dump(Print& out, const String& prefix = "") const
-        {
-            out.printf("%sRegistration: %s\n", prefix.c_str(), this->_url.c_str());
-        }
+        // void dump(Print& out, const std::string& prefix = "") const
+        // {
+        //     out.printf("%sRegistration: %s\n", prefix.c_str(), this->_url.c_str());
+        // }
 
     private:
-        String _url;
+        std::string _url;
 };
 
 class State {
@@ -304,10 +304,11 @@ class HawkbitClient {
         HawkbitClient(
             JsonDocument& json,
             WiFiClient& wifi,
-            const String& baseUrl,
-            const String& tenantName,
-            const String& controllerId,
-            const String& securityToken);
+            const std::string& baseUrl,
+            const std::string& tenantName,
+            const std::string& controllerId,
+            const std::string& securityToken,
+            );
 
         State readState();
 
@@ -318,12 +319,12 @@ class HawkbitClient {
         }
 
         template<typename DownloadHandler>
-        void download(const Artifact& artifact, const String& linkType, DownloadHandler function)
+        void download(const Artifact& artifact, const std::string& linkType, DownloadHandler function)
         {
             auto href = artifact.links().find(linkType);
 
             if ( href == artifact.links().end()) {
-                throw String("Missing link for download");
+                throw std::string("Missing link for download");
             }
 
             _http.begin(this->_wifi, href->second);
@@ -345,21 +346,21 @@ class HawkbitClient {
             }
         };
 
-        UpdateResult reportProgress(const Deployment& deployment, uint32_t done, uint32_t total, std::vector<String> details = {});
+        UpdateResult reportProgress(const Deployment& deployment, uint32_t done, uint32_t total, std::vector<std::string> details = {});
 
-        UpdateResult reportComplete(const Deployment& deployment, bool success = true, std::vector<String> details = {});
+        UpdateResult reportComplete(const Deployment& deployment, bool success = true, std::vector<std::string> details = {});
         
-        UpdateResult reportScheduled(const Deployment& deployment, std::vector<String> details = {});
+        UpdateResult reportScheduled(const Deployment& deployment, std::vector<std::string> details = {});
         
-        UpdateResult reportResumed(const Deployment& deployment, std::vector<String> details = {});
+        UpdateResult reportResumed(const Deployment& deployment, std::vector<std::string> details = {});
         
-        UpdateResult reportCancelAccepted(const Stop& stop, std::vector<String> details = {});
+        UpdateResult reportCancelAccepted(const Stop& stop, std::vector<std::string> details = {});
         
-        UpdateResult reportCancelRejected(const Stop& stop, std::vector<String> details = {});
+        UpdateResult reportCancelRejected(const Stop& stop, std::vector<std::string> details = {});
 
-        UpdateResult reportCanceled(const Deployment& deployment, std::vector<String> details = {});
+        UpdateResult reportCanceled(const Deployment& deployment, std::vector<std::string> details = {});
 
-        UpdateResult updateRegistration(const Registration& registration, const std::map<String,String>& data, MergeMode mergeMode = REPLACE, std::initializer_list<String> details = {});
+        UpdateResult updateRegistration(const Registration& registration, const std::map<std::string,std::string>& data, MergeMode mergeMode = REPLACE, std::initializer_list<std::string> details = {});
 
         /**
          * Set the timeout (in milliseconds) for establishing a connection to the server.
@@ -385,17 +386,17 @@ class HawkbitClient {
     
         HTTPClient _http;
 
-        String _baseUrl;
-        String _tenantName;
-        String _controllerId;
-        String _authToken;
+        std::string _baseUrl;
+        std::string _tenantName;
+        std::string _controllerId;
+        std::string _authToken;
 
-        Deployment readDeployment(const String& href);
-        Stop readCancel(const String& href);
+        Deployment readDeployment(const std::string& href);
+        Stop readCancel(const std::string& href);
 
-        String feedbackUrl(const Deployment& deployment) const;
-        String feedbackUrl(const Stop& stop) const;
+        std::string feedbackUrl(const Deployment& deployment) const;
+        std::string feedbackUrl(const Stop& stop) const;
 
         template<typename IdProvider>
-        UpdateResult sendFeedback(IdProvider id, const String& execution, const String& finished, std::vector<String> details );
+        UpdateResult sendFeedback(IdProvider id, const std::string& execution, const std::string& finished, std::vector<std::string> details );
 };
