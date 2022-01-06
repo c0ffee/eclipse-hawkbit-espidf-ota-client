@@ -373,7 +373,7 @@ class HawkbitClient {
          */
         void connectTimeout(int connectTimeout)
         {
-            this->_http_config.timeout_ms(connectTimeout);
+            this->_http_config.timeout_ms = connectTimeout;
         }
 
     private:
