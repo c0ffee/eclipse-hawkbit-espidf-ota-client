@@ -12,7 +12,7 @@
  *******************************************************************************/
 #include "hawkbit.h"
 
-static const char* TAG = "HAWKBIT";
+static const char* TAG = "hawkbit";
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
