@@ -40,7 +40,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
             if (!esp_http_client_is_chunked_response(evt->client)) {
                 // If user_data buffer is configured, copy the response into the buffer
                 if (evt->user_data) {
-                    memcpy(evt->user_data + output_len, evt->data, evt->data_len);
+                    memcpy((uint8_t*)evt->user_data + output_len, evt->data, evt->data_len);
                 } else {
                     if (output_buffer == NULL) {
                         output_buffer = (char *) malloc(esp_http_client_get_content_length(evt->client));
@@ -224,8 +224,8 @@ State HawkbitClient::readState()
 std::map<std::string,std::string> toMap(const JsonObject& obj) {
     std::map<std::string,std::string> result;
     for (const JsonPair& p: obj) {
-        if (p.value().is<char*>()) {
-            result[std::string(p.key().c_str())] = std::string(p.value().as<char*>());
+        if (p.value().is<const char*>()) {
+            result[std::string(p.key().c_str())] = std::string(p.value().as<const char*>());
         }
     }
     return result;

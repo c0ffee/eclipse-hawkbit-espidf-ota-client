@@ -77,7 +77,7 @@ class Artifact {
         }
 
         const std::string& filename() const { return _filename; }
-        const uint32_t size() const { return _size; }
+        uint32_t size() const { return _size; }
         const std::map<std::string,std::string>& hashes() const { return _hashes; }
         const std::map<std::string,std::string>& links() const { return _links; }
 
@@ -237,7 +237,7 @@ class State {
             return this->_type == type;
         }
 
-        const Type type() const { return this->_type; }
+        Type type() const { return this->_type; }
         const Deployment& deployment() const { return this->_deployment; }
         const Stop& stop() const { return this->_stop; }
         const Registration& registration() const { return this->_registration; }
