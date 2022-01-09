@@ -188,10 +188,14 @@ State HawkbitClient::readState()
             if ( code == HttpStatus_Ok ) {
                 DeserializationError error = deserializeJson(_doc, resultPayload);
                 if (error) {
-                    //esp_http_client_cleanup(_http);
-                    // FIXME: need a way to handle errors
-                    //throw 1;
+                    ESP_LOGE(TAG, "readState: DeserializationError %s", error.c_str());
+                    esp_http_client_cleanup(_http);
+                    return State();
                 }
+            } else {
+                    ESP_LOGE(TAG, "readState: not succesful with %d", esp_http_client_get_status_code(_http));
+                    esp_http_client_cleanup(_http);
+                    return State();
             }
             esp_http_client_cleanup(_http);
 
