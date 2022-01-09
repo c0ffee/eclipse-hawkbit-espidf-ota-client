@@ -378,6 +378,7 @@ class HawkbitClient {
 
         esp_http_client_handle_t initHttpHandle(esp_http_client_method_t method, const std::string& url);
 
+        std::string& getAuthToken() { return this->_authToken; }
         uint32_t getPollingTime() { return this->pollingTime; }
 
     private:
