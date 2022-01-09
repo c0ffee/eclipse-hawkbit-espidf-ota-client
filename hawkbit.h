@@ -378,6 +378,8 @@ class HawkbitClient {
 
         esp_http_client_handle_t initHttpHandle(esp_http_client_method_t method, const std::string& url);
 
+        uint32_t getPollingTime() { return this->pollingTime; }
+
     private:
         JsonDocument& _doc;
     
@@ -388,6 +390,9 @@ class HawkbitClient {
         std::string _tenantName;
         std::string _controllerId;
         std::string _authToken;
+
+        //polling time in seconds
+        uint32_t pollingTime = 60;
 
         Deployment readDeployment(const std::string& href);
         Stop readCancel(const std::string& href);

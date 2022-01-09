@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 #include "hawkbit.h"
+#include <iomanip>
+#include <sstream>
 
 static const char* TAG = "hawkbit";
 
@@ -198,6 +200,15 @@ State HawkbitClient::readState()
                     return State();
             }
             esp_http_client_cleanup(_http);
+
+            std::string tmp = _doc["config"]["polling"]["sleep"];
+            if (!tmp.empty()) {
+                struct std::tm tm;
+                std::istringstream ss(tmp);
+                ss >> std::get_time(&tm, "%H:%M:%S");
+                this->pollingTime = tm.tm_hour*60*60 + tm.tm_min*60 + tm.tm_sec;
+                ESP_LOGI(TAG, "Received polling time: %s --> sleep %d seconds", tmp.c_str(), this->pollingTime);
+            }
 
             std::string href = _doc["_links"]["deploymentBase"]["href"] | "";
             if (!href.empty()) {
