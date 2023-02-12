@@ -137,7 +137,7 @@ UpdateResult HawkbitClient::updateRegistration(const Registration& registration,
     }
 
     _doc.createNestedObject("data");
-    for (const std::pair<std::string,std::string>& entry : data) {
+    for (const std::pair<std::string,std::string> entry : data) {
         _doc["data"][std::string(entry.first)] = entry.second;
     }
 
