@@ -1,8 +1,12 @@
-# Notices for Eclipse Hawkbit OTA Client
+# Notices for Eclipse Hawkbit ESP-IDF OTA Client
 
-This content is produced and maintained by Jens Reimann.
+This content is forked from the original project of Jens Reimann
 
  * Project home: https://github.com/ctron/eclipse-hawkbit-arduino-ota-client
+
+This fork is maintained by Martin Schuessler
+
+ * Project home: https://github.com/c0ffee/eclipse-hawkbit-espidf-ota-client
 
 ## Trademarks
 
@@ -27,7 +31,7 @@ SPDX-License-Identifier: EPL-2.0
 
 The project maintains the following source code repositories:
 
- * https://github.com/ctron/eclipse-hawkbit-arduino-ota-client
+ * https://github.com/c0ffee/eclipse-hawkbit-espidf-ota-client
 
 ## Cryptography
 

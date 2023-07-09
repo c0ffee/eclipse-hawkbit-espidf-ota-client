@@ -1,3 +1,4 @@
+/* Original Copyright Notice */
 /*******************************************************************************
  * Copyright (c) 2020 Red Hat Inc
  *
@@ -10,6 +11,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
+/* 
+ * Modified by Martin Schuessler
+ * Copyright (c) 2023 Martin Schuessler
+ */
+
 #include "hawkbit.h"
 #include <iomanip>
 #include <sstream>
